@@ -12,24 +12,11 @@ cap.set(4, 720)
 model = load_model('digitRecognitionCNNModel.h5')
 
 while(True):
-
-    # Read from the webcam
     ret, frame = cap.read()
-
-    # If the frame is available
     if ret == True:
 
-        #
-        cv2.imshow('Sudoku Solver V2', frame)
-
-        # Press 'q' to stop the program
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
-    # If the frame is unavailable stop the program
     else:
         break
-
-# Release & destroy all resources
-cap.release()
-cv2.destroyAllWindows()
