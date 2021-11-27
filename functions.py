@@ -1,3 +1,4 @@
+from types import coroutine
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
@@ -87,6 +88,61 @@ def fourCornersOfBestContour(bestContour):
     return None
 
 
+def locateCorners(fourCorners):
+
+    # Initialize an array to hold the coordinates of the 4 corners
+    arrayOfCorners = np.zeros((4, 2), dtype="float32")
+
+    # Reshape the 4 corners
+    fourCorners = fourCorners.reshape(4, 2)
+
+    # Initialize a variable to store the sum of the coordinates
+    sumOfCoordinates = 9999999
+
+    # Initialize a variable to store the index of the coordinate of interest
+    index = 0
+
+    # Find the top left corner (sum of the coordinates is the smallest)
+    for i in range(4):
+        if(fourCorners[i][0] + fourCorners[i][1] < sumOfCoordinates):
+            sumOfCoordinates = fourCorners[i][0] + fourCorners[i][1]
+            index = i
+
+    # Store the top left corner
+    arrayOfCorners[0] = fourCorners[index]
+
+    # Delete the top left corner from the 4 corners
+    threeCorners = np.delete(fourCorners, index, 0)
+
+    # Reset variable to store the sum of the coordinates
+    sumOfCoordinates = 0
+
+    # Find the bottom right corner (sum of the coordinates is the largest)
+    for i in range(3):
+        if(threeCorners[i][0] + threeCorners[i][1] > sumOfCoordinates):
+            sumOfCoordinates = threeCorners[i][0] + threeCorners[i][1]
+            index = i
+
+    # Store the bottom right corner
+    arrayOfCorners[3] = threeCorners[index]
+
+    # Delete the top left corner from the 4 corners
+    twoCorners = np.delete(threeCorners, index, 0)
+
+    # Find the top right & bottom left corners
+    if (twoCorners[0][0] > twoCorners[1][0]):
+        arrayOfCorners[1] = twoCorners[0]
+        arrayOfCorners[2] = twoCorners[1]
+    else:
+        arrayOfCorners[1] = twoCorners[1]
+        arrayOfCorners[2] = twoCorners[0]
+
+    # Ensure shape
+    arrayOfCorners = arrayOfCorners.reshape(4, 2)
+
+    return arrayOfCorners
+
+
 def solve(frame, model):
 
     # Make a copy of the Sudoku Puzzle to be used later
@@ -108,3 +164,6 @@ def solve(frame, model):
     # Return the original image if there is no Sudoku Puzzle yet
     if fourCorners is None:
         return originalCopy
+
+    # Locate the top left, top right, bottom left, & bottom right corners
+    corners = locateCorners(fourCorners)
