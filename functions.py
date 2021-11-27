@@ -1,4 +1,6 @@
-from types import coroutine
+from abc import ABC
+
+from matplotlib.colors import BoundaryNorm
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
@@ -143,6 +145,41 @@ def locateCorners(fourCorners):
     return arrayOfCorners
 
 
+def square(corners):
+
+    # Function to find the angle between 2 vectors
+    def angleBetweenVectors(vector1, vector2):
+        unitVector1 = vector1 / np.linalg.norm(vector1)
+        unitVector2 = vector2 / np.linalg.norm(vector2)
+        dot_product = np.dot(unitVector1, unitVector2)
+        angle = np.arccos(dot_product) * 57.2958
+        return angle
+
+    TL = corners[0]
+    TR = corners[1]
+    BL = corners[2]
+    BR = corners[3]
+
+    # TL - TR
+    # |     |
+    # BL - BR
+
+    # Vectors between the 4 corners
+    TLTR = TR - TL
+    TRBR = BR - TR
+    BRBL = BL - BR
+    BLTL = TL - BL
+
+    # Angles at the 4 corners
+    angleTL = angleBetweenVectors(BLTL, TLTR)
+    angleTR = angleBetweenVectors(TLTR, TRBR)
+    angleBR = angleBetweenVectors(TRBR, BRBL)
+    angleBL = angleBetweenVectors(BRBL, BLTL)
+
+    # If all 4 corners are not approximately 90 degrees return False
+    if not ()
+
+
 def solve(frame, model):
 
     # Make a copy of the Sudoku Puzzle to be used later
@@ -167,3 +204,7 @@ def solve(frame, model):
 
     # Locate the top left, top right, bottom left, & bottom right corners
     corners = locateCorners(fourCorners)
+
+    # Return the original image if the 4 corners of the best contour are not square
+    if not square(corners):
+        return originalCopy
