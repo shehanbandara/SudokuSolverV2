@@ -176,8 +176,15 @@ def square(corners):
     angleBR = angleBetweenVectors(TRBR, BRBL)
     angleBL = angleBetweenVectors(BRBL, BLTL)
 
+    # Are the angles at the 4 corners approximately 90 degrees
+    rightAngleTL = (angleTL - 90) < 20
+    rightAngleTR = (angleTR - 90) < 20
+    rightAngleBR = (angleBR - 90) < 20
+    rightAngleBL = (angleBL - 90) < 20
+
     # If all 4 corners are not approximately 90 degrees return False
-    if not ()
+    if not ((rightAngleTL and rightAngleTR) and (rightAngleBL and rightAngleBR)):
+        return False
 
 
 def solve(frame, model):
