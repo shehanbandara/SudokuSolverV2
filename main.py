@@ -7,7 +7,7 @@ from tensorflow.keras.models import load_model
 
 # Function to display the Sudoku Puzzle solution
 def show(image, width, height):
-    image = cv2.resize(image, (width, height))
+    # image = cv2.resize(image, (width, height))
     cv2.imshow('Sudoku Solver V2', image)
 
 

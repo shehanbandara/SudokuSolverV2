@@ -256,6 +256,25 @@ def processSudokuPuzzleBoard(sudokuPuzzleBoard):
     return image
 
 
+def extractAndClassifyDigits(processedSudokuPuzzleBoard, model):
+
+    # Initialize a list to store the Sudoku Puzzle digits
+    digits = []
+    for i in range(9):
+        row = []
+        for j in range(9):
+            row.append(0)
+        digits.append(row)
+
+    # Find the height and width of each box
+    boxHeight = processedSudokuPuzzleBoard.shape[0] // 9
+    boxWidth = processedSudokuPuzzleBoard.shape[1] // 9
+
+    # Calculate a height and width to crop each box by to remove the boundary lines
+    boxCroppedHeight = math.floor(boxHeight / 10)
+    boxCroppedWidth = math.floor(boxWidth / 10)
+
+
 def solve(frame, model):
 
     # Make a copy of the Sudoku Puzzle to be used later
@@ -290,3 +309,6 @@ def solve(frame, model):
 
     # Preform some processing to the Sudoku Puzzle board
     processedSudokuPuzzleBoard = processSudokuPuzzleBoard(sudokuPuzzleBoard)
+
+    # Extract & Classify The Digits of The Sudoku Puzzle
+    digits = extractAndClassifyDigits(processedSudokuPuzzleBoard, model)
