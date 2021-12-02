@@ -236,6 +236,26 @@ def grabSudokuPuzzleBoard(corners, image):
     return sudokuPuzzleBoard
 
 
+def processSudokuPuzzleBoard(sudokuPuzzleBoard):
+
+    # Blur the Sudoku Puzzle board
+    image = cv2.GaussianBlur(sudokuPuzzleBoard, (5, 5), 0)
+
+    # Convert Sudoku Puzzle board to gray
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # Apply an adaptive threshold to the Sudoku Puzzle board
+    image = cv2.adaptiveThreshold(image, 255, 1, 1, 11, 2)
+
+    # Invert the color of the Sudoku Puzzle board
+    image = cv2.bitwise_not(image)
+
+    # Apply a threshold to the Sudoku Puzzle board
+    _, image = cv2.threshold(image, 150, 255, cv2.THRESH_BINARY)
+
+    return image
+
+
 def solve(frame, model):
 
     # Make a copy of the Sudoku Puzzle to be used later
@@ -265,5 +285,8 @@ def solve(frame, model):
     if not square(corners):
         return originalCopy
 
-    # Grab the Sudoku Puzzle Board
+    # Grab the Sudoku Puzzle board
     sudokuPuzzleBoard = grabSudokuPuzzleBoard(corners, originalCopy)
+
+    # Preform some processing to the Sudoku Puzzle board
+    processedSudokuPuzzleBoard = processSudokuPuzzleBoard(sudokuPuzzleBoard)
