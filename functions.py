@@ -185,10 +185,10 @@ def square(corners):
         return False
 
     # Lengths of the 4 sides
-    lengthTLTR = math.sqrt((TL[0] - TR[0]) ** 2 + (TL[1] - TR[1]) ** 2)
-    lengthTRBR = math.sqrt((TR[0] - BR[0]) ** 2 + (TR[1] - BR[1]) ** 2)
-    lengthBRBL = math.sqrt((BR[0] - BL[0]) ** 2 + (BR[1] - BL[1]) ** 2)
-    lengthBLTL = math.sqrt((BL[0] - TL[0]) ** 2 + (BL[1] - TL[1]) ** 2)
+    lengthTLTR = math.sqrt(((TL[0] - TR[0]) ** 2) + ((TL[1] - TR[1]) ** 2))
+    lengthTRBR = math.sqrt(((TR[0] - BR[0]) ** 2) + ((TR[1] - BR[1]) ** 2))
+    lengthBRBL = math.sqrt(((BR[0] - BL[0]) ** 2) + ((BR[1] - BL[1]) ** 2))
+    lengthBLTL = math.sqrt(((BL[0] - TL[0]) ** 2) + ((BL[1] - TL[1]) ** 2))
 
     # Shortest & longest side lengths
     shortestSide = min(lengthTLTR, lengthTRBR, lengthBRBL, lengthBLTL)
@@ -200,6 +200,40 @@ def square(corners):
 
     # Return True if the Sudoku Puzzle is a square
     return True
+
+
+def grabSudokuPuzzleBoard(corners, image):
+
+    TL = corners[0]
+    TR = corners[1]
+    BL = corners[2]
+    BR = corners[3]
+
+    # TL - TR
+    # |     |
+    # BL - BR
+
+    # Lengths of the 4 sides
+    lengthTLTR = math.sqrt(((TL[0] - TR[0]) ** 2) + ((TL[1] - TR[1]) ** 2))
+    lengthTRBR = math.sqrt(((TR[0] - BR[0]) ** 2) + ((TR[1] - BR[1]) ** 2))
+    lengthBRBL = math.sqrt(((BR[0] - BL[0]) ** 2) + ((BR[1] - BL[1]) ** 2))
+    lengthBLTL = math.sqrt(((BL[0] - TL[0]) ** 2) + ((BL[1] - TL[1]) ** 2))
+
+    # Height and width of the Sudoku Puzzle
+    height = max(int(lengthBLTL), int(lengthTRBR))
+    width = max(int(lengthTLTR), int(lengthBRBL))
+
+    # Construct Sudoku Puzzle board destination array
+    destinationArray = np.array(
+        [[0, 0], [width - 1, 0], [0, height - 1], [width - 1, height - 1]], dtype="float32")
+
+    # Perform the perspective transform
+    value = cv2.getPerspectiveTransform(corners, destinationArray)
+
+    # Warp the Sudoku Puzzle board
+    sudokuPuzzleBoard = cv2.warpPerspective(image, value, (width, height))
+
+    return sudokuPuzzleBoard
 
 
 def solve(frame, model):
@@ -230,5 +264,6 @@ def solve(frame, model):
     # Return the original image if the 4 corners of the best contour are not square
     if not square(corners):
         return originalCopy
-    else:
-        return image
+
+    # Grab the Sudoku Puzzle Board
+    sudokuPuzzleBoard = grabSudokuPuzzleBoard(corners, originalCopy)
