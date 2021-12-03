@@ -334,6 +334,20 @@ def extractAndClassifyDigits(processedSudokuPuzzleBoard, model):
             # Resize the box
             digitBox = cv2.resize(digitBox, (28, 28))
 
+            # If the box has very little black pixels it is blank so white it out
+            if digitBox.sum() >= ((28**2) * 255) - (28 * 255):
+                digits[i][j] = 0
+                continue
+
+            # If the box has a large white area in its center it so blank so white it out
+            boxCenterHeight = digitBox.shape[0] // 2
+            boxCenterWidth = digitBox.shape[1] // 2
+            boxCenter = digitBox[boxCenterHeight//2:boxCenterHeight//2 +
+                                 boxCenterHeight, boxCenterWidth//2:boxCenterWidth//2+boxCenterWidth]
+            if boxCenter.sum() >= boxCenterHeight * boxCenterWidth * 255 - 255:
+                digits[i][j] = 0
+                continue
+
 
 def solve(frame, model):
 
