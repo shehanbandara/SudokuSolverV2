@@ -258,6 +258,38 @@ def processSudokuPuzzleBoard(sudokuPuzzleBoard):
 
 def extractAndClassifyDigits(processedSudokuPuzzleBoard, model):
 
+    def seperateDigitAndRemoveNoise(box):
+
+        # Convert the image from type float to type integer
+        box = box.astype('uint8')
+
+        # Calculate the connected components of the image
+        retval, labels, stats, centroids = cv2.connectedComponentsWithStats(
+            box, connectivity=8)
+        size = stats[:, -1]
+
+        # If there is 1 or less connected components (no digit) return a blank white image
+        if (len(size) <= 1):
+            blankBox = np.zeros(box.shape)
+            blankBox.fill(255)
+            return blankBox
+
+        # Initialize variables for the biggest label and the biggest label's size
+        biggestLabel = 1
+        biggestLabelSize = size[1]
+
+        for i in range(2, retval):
+            if size[i] > biggestLabelSize:
+                biggestLabel = i
+                biggestLabelSize = size[i]
+
+        # Remove all noise from the digit
+        digitBox = np.zeros(box.shape)
+        digitBox.fill(255)
+        digitBox[labels == biggestLabel] = 0
+
+        return digitBox
+
     # Initialize a list to store the Sudoku Puzzle digits
     digits = []
     for i in range(9):
@@ -273,6 +305,34 @@ def extractAndClassifyDigits(processedSudokuPuzzleBoard, model):
     # Calculate a height and width to crop each box by to remove the boundary lines
     boxCroppedHeight = math.floor(boxHeight / 10)
     boxCroppedWidth = math.floor(boxWidth / 10)
+
+    for i in range(9):
+        for j in range(9):
+
+            # Crop each box to remove the boundary lines
+            croppedBox = processedSudokuPuzzleBoard[boxHeight*i+boxCroppedHeight:boxHeight*(
+                i+1)-boxCroppedHeight, boxWidth*j+boxCroppedWidth:boxWidth*(j+1)-boxCroppedWidth]
+
+            # Remove all black lines near the edges
+            # Top side
+            while np.sum(croppedBox[0]) <= (1 - 0.6) * croppedBox.shape[1] * 255:
+                croppedBox = croppedBox[1:]
+            # Bottom side
+            while np.sum(croppedBox[:, -1]) <= (1 - 0.6) * croppedBox.shape[1] * 255:
+                croppedBox = np.delete(croppedBox, -1, 1)
+            # Left side
+            while np.sum(croppedBox[:, 0]) <= (1 - 0.6) * croppedBox.shape[0] * 255:
+                croppedBox = np.delete(croppedBox, 0, 1)
+            # Right side
+            while np.sum(croppedBox[-1]) <= (1 - 0.6) * croppedBox.shape[0] * 255:
+                croppedBox = croppedBox[:-1]
+
+            # Seperate the digit in each box and remove any noise
+            digitBox = cv2.bitwise_not(croppedBox)
+            digitBox = seperateDigitAndRemoveNoise(digitBox)
+
+            # Resize the box
+            digitBox = cv2.resize(digitBox, (28, 28))
 
 
 def solve(frame, model):
@@ -310,5 +370,5 @@ def solve(frame, model):
     # Preform some processing to the Sudoku Puzzle board
     processedSudokuPuzzleBoard = processSudokuPuzzleBoard(sudokuPuzzleBoard)
 
-    # Extract & Classify The Digits of The Sudoku Puzzle
+    # Extract & classify the digits of the Sudoku Puzzle
     digits = extractAndClassifyDigits(processedSudokuPuzzleBoard, model)
