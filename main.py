@@ -3,7 +3,6 @@ import functions
 from keras.models import Sequential
 from keras.layers import Conv2D, Dense, Dropout, Flatten, MaxPooling2D
 import numpy as np
-from tensorflow.keras.models import load_model
 
 
 # Function to display the Sudoku Puzzle solution
