@@ -1,9 +1,13 @@
+import copy
 import cv2
 import math
 import matplotlib.pyplot as plt
 import numpy as np
 import sudokuSolver
 from scipy import ndimage
+
+# Gloabl iteration counter variable
+iterations = 0
 
 
 def imagePreProcessing(image):
@@ -389,6 +393,9 @@ def extractAndClassifyDigits(processedSudokuPuzzleBoard, model):
 
 def solve(frame, model):
 
+    # Declare iterations as a global variable
+    global iterations
+
     # Make a copy of the Sudoku Puzzle to be used later
     originalCopy = np.copy(frame)
 
@@ -424,3 +431,23 @@ def solve(frame, model):
 
     # Extract & classify the digits of the Sudoku Puzzle
     digits = extractAndClassifyDigits(processedSudokuPuzzleBoard, model)
+
+    # Initialize a list for the full Sudoku Puzzle solution
+    fullSolution = copy.deepcopy(digits)
+
+    # If it has been at least 3 iterations
+    if iterations > 2:
+        # Solve the Sudoku Puzzle
+        try:
+            sudokuSolver.solveSudokuPuzzle(fullSolution)
+        except:
+            pass
+
+        # Return the original image if there is no valid Sudoku Puzzle solution yet
+        if fullSolution == digits:
+            return processedSudokuPuzzleBoard
+
+    # Increment the iterations counter & return the original image if has not yet been 3 iterations
+    else:
+        iterations += 1
+        return originalCopy
