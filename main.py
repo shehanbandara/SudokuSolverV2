@@ -1,7 +1,8 @@
 import cv2
 import functions
+from keras.models import Sequential
+from keras.layers import Conv2D, Dense, Dropout, Flatten, MaxPooling2D
 import numpy as np
-import sudokuSolver
 from tensorflow.keras.models import load_model
 
 
@@ -16,8 +17,19 @@ cap = cv2.VideoCapture(0)
 cap.set(3, 1280)
 cap.set(4, 720)
 
-# Load the digit recognition CNN Model
-model = load_model('digitRecognitionCNNModel.h5')
+# Load the digit recognition Model
+# Load the weights and configuration seperately to speed up the prediction
+model = Sequential()
+model.add(Conv2D(32, kernel_size=(3, 3),
+                 activation='relu', input_shape=(28, 28, 1)))
+model.add(Conv2D(64, (3, 3), activation='relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Dropout(0.25))
+model.add(Flatten())
+model.add(Dense(128, activation='relu'))
+model.add(Dropout(0.5))
+model.add(Dense(9, activation='softmax'))
+model.load_weights("digitRecognitionModel.h5")
 
 while(True):
 

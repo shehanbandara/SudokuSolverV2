@@ -3,6 +3,7 @@ import math
 import matplotlib.pyplot as plt
 import numpy as np
 import sudokuSolver
+from scipy import ndimage
 
 
 def imagePreProcessing(image):
@@ -334,12 +335,12 @@ def extractAndClassifyDigits(processedSudokuPuzzleBoard, model):
             # Resize the box
             digitBox = cv2.resize(digitBox, (28, 28))
 
-            # If the box has very little black pixels it is blank so white it out
+            # If the box has very little black pixels it is blank so overwrite with 0
             if digitBox.sum() >= ((28**2) * 255) - (28 * 255):
                 digits[i][j] = 0
                 continue
 
-            # If the box has a large white area in its center it so blank so white it out
+            # If the box has a large white area in its center it is blank so overwrite with 0
             boxCenterHeight = digitBox.shape[0] // 2
             boxCenterWidth = digitBox.shape[1] // 2
             boxCenter = digitBox[boxCenterHeight//2:boxCenterHeight//2 +
@@ -347,6 +348,43 @@ def extractAndClassifyDigits(processedSudokuPuzzleBoard, model):
             if boxCenter.sum() >= boxCenterHeight * boxCenterWidth * 255 - 255:
                 digits[i][j] = 0
                 continue
+
+            # Apply a Binary Threshold to make the digit clearer
+            _, digitBox = cv2.threshold(digitBox, 200, 255, cv2.THRESH_BINARY)
+            digitBox = digitBox.astype(np.uint8)
+
+            # Invert the color of the box
+            digitBox = cv2.bitwise_not(digitBox)
+
+            # Store the rows and columns
+            rows, columns = digitBox.shape
+
+            # Calculate the center of mass of the box
+            centerY, CenterX = ndimage.measurements.center_of_mass(digitBox)
+
+            # Calculate what to shift the box by to center it
+            shiftX = np.round(columns / 2.0 - CenterX).astype(int)
+            shiftY = np.round(rows / 2.0 - centerY).astype(int)
+
+            # Shift the box
+            temp = np.float32([[1, 0, shiftX], [0, 1, shiftY]])
+            shiftedDigitBox = cv2.warpAffine(digitBox, temp, (columns, rows))
+
+            # Invert the color of the box
+            shiftedDigitBox = cv2.bitwise_not(shiftedDigitBox)
+
+            # Prepare the box for the model to predict the digit
+            preparedImage = shiftedDigitBox.reshape(-1, 28, 28, 1)
+            preparedImage = preparedImage.astype('float32')
+            preparedImage = preparedImage / 255
+
+            # Get the prediction
+            prediction = model.predict(preparedImage)
+
+            # Overwrite with the index of the class with the maximum probability
+            digits[i][j] = np.argmax(prediction[0]) + 1
+
+    return digits
 
 
 def solve(frame, model):
