@@ -1,7 +1,6 @@
 import copy
 import cv2
 import math
-import matplotlib.pyplot as plt
 import numpy as np
 import sudokuSolver
 from scipy import ndimage
