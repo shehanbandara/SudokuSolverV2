@@ -311,6 +311,7 @@ def extractAndClassifyDigits(processedSudokuPuzzleBoard, model):
     boxCroppedHeight = math.floor(boxHeight / 10)
     boxCroppedWidth = math.floor(boxWidth / 10)
 
+    # Loop through each box
     for i in range(9):
         for j in range(9):
 
@@ -391,6 +392,43 @@ def extractAndClassifyDigits(processedSudokuPuzzleBoard, model):
     return digits
 
 
+def overlaySolution(image, fullSolution, digits):
+
+    # Find the height and width of each box
+    boxHeight = image.shape[0] // 9
+    boxWidth = image.shape[1] // 9
+
+    # Loop through each box
+    for i in range(9):
+        for j in range(9):
+
+            # This box already had a digit continue to the next box
+            if digits[i][j] != 0:
+                continue
+
+            # Calculate parameters used to write the solution to the Sudoku Puzzle
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            digitString = str(fullSolution[i][j])
+            xOffset = boxWidth // 15
+            yOffset = boxHeight // 15
+            (textHeight, textWidth), baseline = cv2.getTextSize(
+                digitString, font, fontScale=1, thickness=3)
+            fontScale = 0.6 * min(boxHeight, boxWidth) / \
+                max(textHeight, textWidth)
+            textHeight *= fontScale
+            textWidth *= fontScale
+            xBottomLeftCorner = boxWidth*j + \
+                math.floor((boxWidth - textWidth) / 2) + xOffset
+            yBottomLeftCorner = boxHeight * \
+                (i+1) - math.floor((boxHeight - textHeight) / 2) + yOffset
+
+            # Overlay the solution on the Sudoku Puzzle
+            overlayedSolution = cv2.putText(image, digitString, (xBottomLeftCorner, yBottomLeftCorner), font,
+                                            fontScale, (0, 255, 0), thickness=3, lineType=cv2.LINE_AA)
+
+    return overlayedSolution
+
+
 def solve(frame, model):
 
     # Declare iterations as a global variable
@@ -445,9 +483,15 @@ def solve(frame, model):
 
         # Return the original image if there is no valid Sudoku Puzzle solution yet
         if fullSolution == digits:
-            return processedSudokuPuzzleBoard
+            return originalCopy
 
     # Increment the iterations counter & return the original image if has not yet been 3 iterations
     else:
         iterations += 1
         return originalCopy
+
+    # Overlay the solution on the Sudoku Puzzle
+    solvedSudokuPuzzle = overlaySolution(
+        sudokuPuzzleBoard, fullSolution, digits)
+
+    return solvedSudokuPuzzle
