@@ -429,6 +429,37 @@ def overlaySolution(image, fullSolution, digits):
     return overlayedSolution
 
 
+def perspectiveTransform(corners):
+
+    TL = corners[0]
+    TR = corners[1]
+    BL = corners[2]
+    BR = corners[3]
+
+    # TL - TR
+    # |     |
+    # BL - BR
+
+    # Lengths of the 4 sides
+    lengthTLTR = math.sqrt(((TL[0] - TR[0]) ** 2) + ((TL[1] - TR[1]) ** 2))
+    lengthTRBR = math.sqrt(((TR[0] - BR[0]) ** 2) + ((TR[1] - BR[1]) ** 2))
+    lengthBRBL = math.sqrt(((BR[0] - BL[0]) ** 2) + ((BR[1] - BL[1]) ** 2))
+    lengthBLTL = math.sqrt(((BL[0] - TL[0]) ** 2) + ((BL[1] - TL[1]) ** 2))
+
+    # Height and width of the Sudoku Puzzle
+    height = max(int(lengthBLTL), int(lengthTRBR))
+    width = max(int(lengthTLTR), int(lengthBRBL))
+
+    # Construct Sudoku Puzzle board destination array
+    destinationArray = np.array(
+        [[0, 0], [width - 1, 0], [0, height - 1], [width - 1, height - 1]], dtype="float32")
+
+    # Perform the perspective transform
+    value = cv2.getPerspectiveTransform(corners, destinationArray)
+
+    return value
+
+
 def solve(frame, model):
 
     # Declare iterations as a global variable
@@ -456,6 +487,9 @@ def solve(frame, model):
 
     # Locate the top left, top right, bottom left, & bottom right corners
     corners = locateCorners(fourCorners)
+
+    # Copy the corners to be used later
+    cornersCopy = copy.deepcopy(corners)
 
     # Return the original image if the 4 corners of the best contour are not square
     if not square(corners):
@@ -494,4 +528,10 @@ def solve(frame, model):
     solvedSudokuPuzzle = overlaySolution(
         sudokuPuzzleBoard, fullSolution, digits)
 
-    return solvedSudokuPuzzle
+    # Apply an Inverse Perspective Transform and overlay the solution on the original image
+    sudokuSolution = cv2.warpPerspective(
+        solvedSudokuPuzzle, perspectiveTransform(cornersCopy), (frame.shape[1], frame.shape[0]), flags=cv2.WARP_INVERSE_MAP)
+    finalSudokuSolution = np.where(sudokuSolution.sum(
+        axis=-1, keepdims=True) != 0, sudokuSolution, originalCopy)
+
+    return finalSudokuSolution
