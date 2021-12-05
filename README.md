@@ -20,3 +20,10 @@ A Computer Vision & Deep Learning Program to Solve Sudoku Puzzles in Real Time.
 6. Navigate to the directory with this repository
 7. Run main.py
 `python main.py`
+
+## Demo: ##
+https://user-images.githubusercontent.com/64564445/144733316-6f17f1d3-fd5b-4ace-aa78-38444024c9a1.mov
+
+https://user-images.githubusercontent.com/64564445/144733430-a99d77dd-2236-400e-8c4b-48abbf88df67.mov
+
+https://user-images.githubusercontent.com/64564445/144733492-90ed2208-7fb3-40cc-a2e2-656ee44dff7a.mov
