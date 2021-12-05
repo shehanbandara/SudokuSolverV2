@@ -476,6 +476,7 @@ def solve(frame, model):
 
     # Return the original image if there is no Sudoku Puzzle yet
     if bestContour is None:
+        iterations = 0
         return originalCopy
 
     # Find the 4 corners of the best contour
@@ -483,6 +484,7 @@ def solve(frame, model):
 
     # Return the original image if there is no Sudoku Puzzle yet
     if fourCorners is None:
+        iterations = 0
         return originalCopy
 
     # Locate the top left, top right, bottom left, & bottom right corners
@@ -493,6 +495,7 @@ def solve(frame, model):
 
     # Return the original image if the 4 corners of the best contour are not square
     if not square(corners):
+        iterations = 0
         return originalCopy
 
     # Grab the Sudoku Puzzle board
